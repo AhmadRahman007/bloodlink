@@ -17,8 +17,6 @@ pipeline {
         REPO_URL       = 'https://github.com/AhmadRahman007/bloodlink.git'
         COMPOSE_FILE   = 'docker-compose.jenkins.yml'
         HEALTH_URL     = 'http://localhost:8001/health'
-        // used when the pusher's commit email is hidden behind a GitHub noreply address
-        FALLBACK_EMAIL = 'qasimalik@gmail.com'
     }
 
     stages {
@@ -79,9 +77,14 @@ pipeline {
     post {
         always {
             script {
+                // email whoever authored the pushed commit
                 def to = env.COMMITTER_EMAIL ?: ''
-                if (!to || to.endsWith('noreply.github.com')) {
-                    to = env.FALLBACK_EMAIL
+                if (!to) {
+                    echo 'No committer email found, skipping notification email.'
+                    return
+                }
+                if (to.endsWith('noreply.github.com')) {
+                    echo "Warning: committer uses a GitHub noreply address (${to}); the email may not be delivered."
                 }
                 def result = currentBuild.currentResult
                 def color = result == 'SUCCESS' ? '#1f7a4d' : '#b3122e'
