@@ -40,3 +40,5 @@ On EC2 you only need `docker-compose.yml`. Compose pulls the image from Docker H
 - Health check: http://localhost:8000/health
 
 Tables are created automatically on startup.
+
+Webhook test.
