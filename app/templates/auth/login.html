@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Log in</h1>
+  <form method="post" action="{{ request.full_path if request.args.get('next') else url_for('login') }}">
+    {{ csrf_field() }}
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required autofocus>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required>
+    <p><button class="btn" type="submit">Log in</button></p>
+  </form>
+  <p class="muted">New here? <a href="{{ url_for('register') }}">Create an account</a></p>
+</div>
+{% endblock %}

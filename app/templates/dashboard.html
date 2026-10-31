@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Hi, {{ session.user_name }}</h1>
+{% if donor %}
+  <p class="muted">You're a registered <span class="bg-badge">{{ donor.blood_group }}</span> donor in {{ donor.city }}.
+  {% if next_eligible and not is_eligible(donor.last_donation) %}Next eligible donation date: <strong>{{ next_eligible.strftime("%d %b %Y") }}</strong>.{% else %}You're eligible to donate.{% endif %}</p>
+{% else %}
+  <p class="muted">You haven't registered as a donor yet. <a href="{{ url_for('donor_profile') }}">Register now →</a></p>
+{% endif %}
+
+<div class="grid grid-2" style="margin-top:20px">
+  <div class="card">
+    <h2>Supply vs need by blood group</h2>
+    <div class="legend"><span class="l-supply">Available donors</span><span class="l-need">Open requests</span></div>
+    <div class="bars">
+      {% for g in BLOOD_GROUPS %}
+      {% set s = by_group.get(g, 0) %}{% set n = need_by_group.get(g, 0) %}
+      <div class="bar-row" title="{{ g }}: {{ s }} donors, {{ n }} open requests">
+        <span class="bg-badge">{{ g }}</span>
+        <div class="bar-track">
+          <div class="bar bar-supply" style="width:{{ (s / max_count * 100)|round }}%"></div>
+          <div class="bar bar-need" style="width:{{ (n / max_count * 100)|round }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row"><h2>My requests</h2><a href="{{ url_for('request_new') }}">New →</a></div>
+    {% for r in my_requests %}
+      <div style="padding:10px 0;border-bottom:1px solid var(--line)">
+        <a href="{{ url_for('request_detail', rid=r.id) }}"><span class="bg-badge">{{ r.blood_group }}</span> {{ r.patient_name }}</a>
+        <span class="pill pill-{{ r.status }}">{{ r.status }}</span>
+        <div class="muted">{{ r.hospital }} · {{ r.response_count }} response{{ "s" if r.response_count != 1 }}</div>
+      </div>
+    {% else %}<p class="muted">You haven't posted any requests.</p>{% endfor %}
+  </div>
+</div>
+
+{% if donor %}
+<div class="card" style="margin-top:16px">
+  <h2>Requests I responded to</h2>
+  {% for x in my_responses %}
+    <div style="padding:10px 0;border-bottom:1px solid var(--line)">
+      <a href="{{ url_for('request_detail', rid=x.request_id) }}"><span class="bg-badge">{{ x.blood_group }}</span> {{ x.patient_name }}</a>
+      at {{ x.hospital }} <span class="pill pill-{{ x.status }}">{{ x.status }}</span>
+    </div>
+  {% else %}<p class="muted">No responses yet. <a href="{{ url_for('request_list') }}">Browse open requests →</a></p>{% endfor %}
+</div>
+{% endif %}
+{% endblock %}

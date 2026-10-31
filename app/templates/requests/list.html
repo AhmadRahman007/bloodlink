@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Blood requests{% endblock %}
+{% block content %}
+<div class="row"><h1>Blood requests</h1><a class="btn" href="{{ url_for('request_new') }}">Post a request</a></div>
+<div class="tabs">
+  <a class="{{ 'active' if status=='open' }}" href="{{ url_for('request_list', status='open') }}">Open</a>
+  <a class="{{ 'active' if status=='fulfilled' }}" href="{{ url_for('request_list', status='fulfilled') }}">Fulfilled</a>
+</div>
+{% if reqs %}
+<div class="grid grid-2">{% for r in reqs %}{% include "requests/_card.html" %}{% endfor %}</div>
+{% else %}<div class="card empty">No {{ status }} requests.</div>{% endif %}
+{% endblock %}

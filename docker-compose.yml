@@ -1,0 +1,40 @@
+# Part I: production deployment using the image from Docker Hub
+services:
+  db:
+    image: mysql:8.0
+    container_name: bloodlink-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+      MYSQL_DATABASE: bloodlink
+      MYSQL_USER: bloodlink
+      MYSQL_PASSWORD: bloodlink123
+    volumes:
+      - bloodlink-db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    image: ahmedrehman007/bloodlink:latest
+    container_name: bloodlink-web
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: bloodlink
+      DB_PASSWORD: bloodlink123
+      DB_NAME: bloodlink
+      SECRET_KEY: bloodlink-part1-secret
+    ports:
+      - "8000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  bloodlink-db-data:

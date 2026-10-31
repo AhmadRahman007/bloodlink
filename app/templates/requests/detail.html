@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ r.id }}{% endblock %}
+{% block content %}
+<div class="card" style="margin-bottom:20px">
+  <div class="row">
+    <h1><span class="bg-badge">{{ r.blood_group }}</span> {{ r.units }} unit{{ "s" if r.units > 1 }} for {{ r.patient_name }}</h1>
+    <div><span class="pill pill-{{ r.urgency }}">{{ r.urgency|capitalize }}</span> <span class="pill pill-{{ r.status }}">{{ r.status|capitalize }}</span></div>
+  </div>
+  <p class="req-meta">{{ r.hospital }}, {{ r.city }} · Posted by {{ r.requester }} on {{ r.created_at.strftime("%d %b %Y, %H:%M") }}</p>
+  <p>Contact: <strong>{% if session.user_id %}{{ r.contact }}{% else %}<a href="{{ url_for('login') }}">log in to view</a>{% endif %}</strong></p>
+  <p class="muted">Compatible donor groups: {{ groups|join(", ") }}</p>
+  <div class="row" style="justify-content:flex-start">
+    {% if can_respond %}
+    <form method="post" action="{{ url_for('request_respond', rid=r.id) }}" class="inline-form" style="flex:1">
+      {{ csrf_field() }}
+      <div><input name="message" maxlength="255" placeholder="Optional note, e.g. I can reach the hospital by 5 pm"></div>
+      <div style="flex:0 0 auto"><button class="btn btn-green">I can donate</button></div>
+    </form>
+    {% elif already %}<span class="pill pill-open">You responded to this request</span>
+    {% elif session.user_id and not donor %}<a href="{{ url_for('donor_profile') }}">Create a donor profile to respond →</a>{% endif %}
+    {% if session.user_id == r.user_id and r.status == 'open' %}
+    <form method="post" action="{{ url_for('request_fulfill', rid=r.id) }}">{{ csrf_field() }}<button class="btn btn-ghost">Mark as fulfilled</button></form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Donors who responded ({{ responses|length }})</h2>
+    {% for x in responses %}
+      <div style="padding:10px 0;border-bottom:1px solid var(--line)">
+        <span class="bg-badge">{{ x.blood_group }}</span> <strong>{{ x.full_name }}</strong>
+        {% if session.user_id == r.user_id %} · {{ x.phone }}{% endif %}
+        {% if x.message %}<div class="muted">"{{ x.message }}"</div>{% endif %}
+      </div>
+    {% else %}<p class="muted">No responses yet.</p>{% endfor %}
+  </div>
+  <div class="card">
+    <h2>Eligible donors in {{ r.city }} ({{ matches|length }})</h2>
+    {% for m in matches %}
+      <div style="padding:10px 0;border-bottom:1px solid var(--line)">
+        <span class="bg-badge">{{ m.blood_group }}</span> {{ m.full_name }}
+        {% if session.user_id %}<span class="muted"> · {{ m.phone }}</span>{% endif %}
+      </div>
+    {% else %}<p class="muted">No compatible donors registered in this city yet.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

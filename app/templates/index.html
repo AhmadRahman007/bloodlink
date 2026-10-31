@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Every drop finds its way to someone who needs it.</h1>
+  <p>BloodLink connects voluntary donors with patients and hospitals in their city. Post a request, find compatible donors, and track who has stepped up.</p>
+  <div class="row" style="justify-content:flex-start">
+    <a class="btn" href="{{ url_for('request_new') }}">Request blood</a>
+    <a class="btn btn-ghost" href="{{ url_for('donor_profile') }}">Become a donor</a>
+  </div>
+</section>
+
+<div class="grid grid-3" style="margin-bottom:24px">
+  <div class="card stat"><div class="num">{{ stats.donors }}</div><div class="muted">Available donors</div></div>
+  <div class="card stat"><div class="num">{{ stats.open }}</div><div class="muted">Open requests</div></div>
+  <div class="card stat"><div class="num">{{ stats.fulfilled }}</div><div class="muted">Requests fulfilled</div></div>
+</div>
+
+<div class="row"><h2>Most urgent requests</h2><a href="{{ url_for('request_list') }}">See all →</a></div>
+{% if urgent %}
+<div class="grid grid-2">
+  {% for r in urgent %}{% include "requests/_card.html" %}{% endfor %}
+</div>
+{% else %}
+<div class="card empty">No open requests right now.</div>
+{% endif %}
+{% endblock %}

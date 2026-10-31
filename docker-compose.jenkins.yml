@@ -1,0 +1,56 @@
+# Part II: deployment built by the Jenkins pipeline.
+# Differences from Part I (docker-compose.yml):
+#   - no custom image/Dockerfile: the code in ./app is mounted into a stock python image as a volume
+#   - different host ports (8001 web, 3308 MySQL) and container names (bloodlink-ci-*)
+#   - its own compose project, network and database volume, so it never touches Part I
+name: bloodlink-ci
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: bloodlink-ci-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+      MYSQL_DATABASE: bloodlink
+      MYSQL_USER: bloodlink
+      MYSQL_PASSWORD: bloodlink123
+    volumes:
+      - bloodlink-ci-db-data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    image: python:3.12-slim
+    container_name: bloodlink-ci-web
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./app:/app                     # application code attached as a volume
+      - bloodlink-ci-pip-cache:/root/.cache/pip
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"     # keep the Jenkins workspace free of root-owned .pyc files
+      PYTHONUNBUFFERED: "1"
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: bloodlink
+      DB_PASSWORD: bloodlink123
+      DB_NAME: bloodlink
+      SECRET_KEY: bloodlink-part2-secret
+    command: >
+      sh -c "pip install -r requirements.txt &&
+             gunicorn --bind 0.0.0.0:5000 --workers 2 --preload --access-logfile - app:app"
+    ports:
+      - "8001:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  bloodlink-ci-db-data:
+  bloodlink-ci-pip-cache:

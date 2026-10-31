@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Request blood{% endblock %}
+{% block content %}
+<div class="card" style="max-width:620px;margin:0 auto">
+  <h1>Request blood</h1>
+  <p class="muted">Compatible donors in the same city will be listed as soon as you post.</p>
+  <form method="post">
+    {{ csrf_field() }}
+    <label for="patient_name">Patient name</label>
+    <input id="patient_name" name="patient_name" maxlength="100" required>
+    <div class="form-row">
+      <div>
+        <label for="blood_group">Blood group needed</label>
+        <select id="blood_group" name="blood_group">{% for g in BLOOD_GROUPS %}<option>{{ g }}</option>{% endfor %}</select>
+      </div>
+      <div>
+        <label for="units">Units</label>
+        <input id="units" name="units" type="number" min="1" max="{{ MAX_UNITS }}" value="1" required>
+      </div>
+      <div>
+        <label for="urgency">Urgency</label>
+        <select id="urgency" name="urgency">
+          <option value="normal">Normal</option><option value="urgent">Urgent</option><option value="critical">Critical</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div><label for="hospital">Hospital</label><input id="hospital" name="hospital" maxlength="120" required></div>
+      <div><label for="city">City</label><input id="city" name="city" maxlength="60" required></div>
+    </div>
+    <label for="contact">Contact number</label>
+    <input id="contact" name="contact" maxlength="20" placeholder="03xx-xxxxxxx" required>
+    <p><button class="btn" type="submit">Post request</button></p>
+  </form>
+</div>
+{% endblock %}

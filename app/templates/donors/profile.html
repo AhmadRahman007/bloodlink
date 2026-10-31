@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Donor profile{% endblock %}
+{% block content %}
+<div class="card" style="max-width:620px;margin:0 auto">
+  <h1>{{ "Your donor profile" if donor else "Become a donor" }}</h1>
+  {% if donor %}
+    <p class="muted">
+      {% if is_eligible(donor.last_donation) %}You're eligible to donate now.
+      {% else %}You can donate again 90 days after your last donation.{% endif %}
+    </p>
+  {% else %}
+    <p class="muted">Register your blood group and city so people nearby can find you when they need blood.</p>
+  {% endif %}
+  <form method="post">
+    {{ csrf_field() }}
+    <div class="form-row">
+      <div>
+        <label for="blood_group">Blood group</label>
+        <select id="blood_group" name="blood_group" required>
+          {% for g in BLOOD_GROUPS %}<option {% if donor and donor.blood_group==g %}selected{% endif %}>{{ g }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="city">City</label>
+        <input id="city" name="city" value="{{ donor.city if donor else '' }}" placeholder="Islamabad" maxlength="60" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" value="{{ donor.phone if donor else '' }}" placeholder="03xx-xxxxxxx" maxlength="20" required>
+      </div>
+      <div>
+        <label for="last_donation">Last donation (optional)</label>
+        <input id="last_donation" name="last_donation" type="date" max="{{ today().isoformat() }}" value="{{ donor.last_donation if donor and donor.last_donation else '' }}">
+      </div>
+    </div>
+    <label class="check"><input type="checkbox" name="is_available" {% if not donor or donor.is_available %}checked{% endif %}> Show me in donor search</label>
+    <p><button class="btn" type="submit">{{ "Save changes" if donor else "Register as donor" }}</button></p>
+  </form>
+</div>
+{% endblock %}

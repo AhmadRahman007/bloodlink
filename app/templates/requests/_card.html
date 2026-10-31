@@ -1,0 +1,8 @@
+<a class="card req-card" href="{{ url_for('request_detail', rid=r.id) }}" style="color:inherit;text-decoration:none;display:block">
+  <div class="row">
+    <h3><span class="bg-badge">{{ r.blood_group }}</span> {{ r.units }} unit{{ "s" if r.units > 1 }} for {{ r.patient_name }}</h3>
+    <span class="pill pill-{{ r.urgency }}">{{ r.urgency|capitalize }}</span>
+  </div>
+  <div class="req-meta">{{ r.hospital }}, {{ r.city }} · {{ r.created_at.strftime("%d %b, %H:%M") }}
+    {% if r.response_count is defined %} · {{ r.response_count }} donor{{ "s" if r.response_count != 1 }} responded{% endif %}</div>
+</a>
