@@ -10,6 +10,12 @@ services:
     image: mysql:8.0
     container_name: bloodlink-ci-db
     restart: unless-stopped
+    # low-memory MySQL settings so this fits next to Part I and Jenkins on a small EC2 instance
+    command: >
+      --performance-schema=OFF --skip-log-bin
+      --innodb-buffer-pool-size=32M --innodb-log-buffer-size=4M
+      --key-buffer-size=8M --max-connections=30 --table-open-cache=200
+      --tmp-table-size=8M --max-heap-table-size=8M
     environment:
       MYSQL_ROOT_PASSWORD: rootpass123
       MYSQL_DATABASE: bloodlink
@@ -44,7 +50,7 @@ services:
       SECRET_KEY: bloodlink-part2-secret
     command: >
       sh -c "pip install -r requirements.txt &&
-             gunicorn --bind 0.0.0.0:5000 --workers 2 --preload --access-logfile - app:app"
+             gunicorn --bind 0.0.0.0:5000 --workers 1 --threads 4 --preload --access-logfile - app:app"
     ports:
       - "8001:5000"
     depends_on:
